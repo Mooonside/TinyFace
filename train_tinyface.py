@@ -266,6 +266,13 @@ def main(_):
                            write_version=2,
                            pad_step_number=False)
     summary_op = tf.summary.merge(list(summaries), name='summary_op')
+
+
+    debug = open('tf_variables.txt','w')
+    for i in tf.global_variables():
+      debug.write(i.name[:-2]+'\n')
+    debug.close()
+
     slim.learning.train(
       train_tensor,
       logdir=FLAGS.train_dir,

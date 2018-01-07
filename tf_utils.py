@@ -19,7 +19,9 @@ from pprint import pprint
 
 import tensorflow as tf
 from tensorflow.contrib.slim.python.slim.data import parallel_reader
-
+from tensorflow.python import pywrap_tensorflow
+from tensorflow.python.platform import app
+from tensorflow.python.platform import flags
 slim = tf.contrib.slim
 
 
@@ -181,7 +183,6 @@ def add_variables_summaries(learning_rate):
 
 def update_model_scope(var, ckpt_scope, new_scope):
     return var.op.name.replace(new_scope,'vgg_16')
-
 
 def get_init_fn(flags):
     """Returns a function run by the chief worker to warm-start the training.
