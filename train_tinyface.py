@@ -12,7 +12,7 @@ slim = tf.contrib.slim
 PREFIX_PATH = '/media/yifeng/Yifeng_Seagate/DataSets'
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
-DATA_FORMAT = 'NCHW'
+DATA_FORMAT = 'NHWC'
 
 tf.app.flags.DEFINE_string(
   'train_dir', os.path.join(PREFIX_PATH, 'tmp/tf_models/'),
@@ -24,6 +24,19 @@ tf.app.flags.DEFINE_integer(
 tf.app.flags.DEFINE_integer(
   'num_preprocessing_threads', 4,
   'The number of threads used to create the batches.')
+
+tf.app.flags.DEFINE_integer(
+  'log_every_n_steps', 10,
+  'The frequency with which logs are print.')
+tf.app.flags.DEFINE_integer(
+  'save_summaries_secs', 600,
+  'The frequency with which summaries are saved, in seconds.')
+tf.app.flags.DEFINE_integer(
+  'save_interval_secs', 600,
+  'The frequency with which the model is saved, in seconds.')
+tf.app.flags.DEFINE_float(
+  'gpu_memory_fraction', 0.8, 'GPU memory fraction to use.')
+
 
 # =========================================================================== #
 # Optimization Flags.
@@ -91,6 +104,62 @@ tf.app.flags.DEFINE_integer(
 tf.app.flags.DEFINE_integer('max_number_of_steps', None,
                             'The maximum number of training steps.')
 
+# =========================================================================== #
+# TinyFace Network flags.
+# =========================================================================== #
+tf.app.flags.DEFINE_float(
+  'loss_alpha', 1., 'Alpha parameter in the loss function.')
+tf.app.flags.DEFINE_float(
+  'negative_ratio', 3., 'Negative ratio in the loss function.')
+tf.app.flags.DEFINE_float(
+  'match_threshold', 0.5, 'Matching threshold in the loss function.')
+
+# =========================================================================== #
+# Learning Rate Flags.
+# =========================================================================== #
+tf.app.flags.DEFINE_string(
+  'learning_rate_decay_type',
+  'exponential',
+  'Specifies how the learning rate is decayed. One of "fixed", "exponential",'
+  ' or "polynomial"'
+)
+tf.app.flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
+tf.app.flags.DEFINE_float(
+  'end_learning_rate', 0.0001,
+  'The minimal end learning rate used by a polynomial decay learning rate.')
+tf.app.flags.DEFINE_float(
+  'label_smoothing', 0.0, 'The amount of label smoothing.')
+tf.app.flags.DEFINE_float(
+  'learning_rate_decay_factor', 0.94, 'Learning rate decay factor.')
+tf.app.flags.DEFINE_float(
+  'num_epochs_per_decay', 2.0,
+  'Number of epochs after which learning rate decays.')
+tf.app.flags.DEFINE_float(
+  'moving_average_decay', None,
+  'The decay to use for the moving average.'
+  'If left as None, then moving averages are not used.')
+
+# =========================================================================== #
+# Fine-Tuning Flags.
+# =========================================================================== #
+tf.app.flags.DEFINE_string(
+  'checkpoint_path', None,
+  'The path to a checkpoint from which to fine-tune.')
+tf.app.flags.DEFINE_string(
+  'checkpoint_model_scope', None,
+  'Model scope in the checkpoint. None if the same as the trained model.')
+tf.app.flags.DEFINE_string(
+  'checkpoint_exclude_scopes', None,
+  'Comma-separated list of scopes of variables to exclude when restoring '
+  'from a checkpoint.')
+tf.app.flags.DEFINE_string(
+  'trainable_scopes', None,
+  'Comma-separated list of scopes to filter the set of variables to train.'
+  'By default, None would train all the variables.')
+tf.app.flags.DEFINE_boolean(
+  'ignore_missing_vars', False,
+  'When restoring a checkpoint would ignore missing variables.')
+
 FLAGS = tf.app.flags.FLAGS
 
 
@@ -119,7 +188,7 @@ def main(_):
     tf_class = nets_factory.get_network(FLAGS.model_name)
     tf_model = tf_class()
 
-    tf_anchors = tf_model.anchors
+    tf_anchors = tf_model.anchors()
     tf_input_shape = tf_model.input_shape
     [image, shape, glabels, gbboxes] = provider.get(['image', 'shape',
                                                      'object/label',
@@ -143,7 +212,7 @@ def main(_):
 
     summaries = set(tf.get_collection(tf.GraphKeys.SUMMARIES))
     predictions, localisations, logits, end_points = \
-      tf_model.net(b_image, is_training=True)
+      tf_model.TF_net(b_image, is_training=True)
 
     total_losses = tf_model.losses(logits, localisations,
                                    b_gclasses, b_glocalisations, b_gscores,

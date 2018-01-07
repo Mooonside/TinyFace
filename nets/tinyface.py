@@ -24,14 +24,14 @@ TFParams = namedtuple('TFParameters', ['img_shape',
 
 
 class TinyFace:
-  def __init__(self, params):
+  def __init__(self, params=None):
 
     # define default parameters
     default_params = TFParams(
       img_shape=(500, 500),
       num_classes=2,
       no_annotation_label=2,
-      feat_shape=[14, 14],
+      feat_shape=[32, 32],
       anchor_offset=0.5,
       anchor_steps=16,
       anchor_sizes=ANCHOR_SIZES
@@ -40,6 +40,7 @@ class TinyFace:
       self.params = params
     else:
       self.params = default_params
+    self.input_shape = self.params.img_shape
 
   def TF_net(self, inputs, is_training):
     return tf_res50_net(inputs, self.params.num_classes, is_training=is_training,
@@ -147,8 +148,8 @@ def tf_res50_net(inputs, num_classes, is_training, scope='tf_res50_net'):
     end_points = resnet_v1_50(inputs, is_training=is_training, scope=scope)
 
   res2 = end_points[1][scope + '/block1']
-  res3 = end_points[1][scope + 'block2']
-  res4 = end_points[1][scope + 'block3']
+  res3 = end_points[1][scope + '/block2']
+  res4 = end_points[1][scope + '/block3']
 
   num_anchors = ANCHOR_SIZES.shape[0]
   num_scores = num_anchors * num_classes
@@ -257,3 +258,4 @@ def tinyface_losses(logits, localisations,
       loss = tf.div(tf.reduce_sum(loss * weights), batch_size, name='value')
       total_loss += loss
       tf.losses.add_loss(loss)
+    return total_loss

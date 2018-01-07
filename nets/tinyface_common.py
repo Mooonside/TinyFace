@@ -170,8 +170,8 @@ def tf_ssd_bboxes_encode_layer(labels,
 
 
 def tinyface_bboxes_encode(labels, bboxes, anchors, num_classes,
-                           scope, dtype=tf.float32):
-  with tf.name_scope(scope):
+                           scope='tinyface_bboxes_encode', dtype=tf.float32):
+  with tf.name_scope(scope, 'tinyface_bboxes_encode'):
     anchors_x, anchors_y, anchors_width, anchors_height = anchors
     num_of_ground_truth = tf.shape(labels)
 

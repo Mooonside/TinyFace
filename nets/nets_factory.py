@@ -24,7 +24,7 @@ from nets import tinyface
 slim = tf.contrib.slim
 
 
-networks_map = {'tinyface': tinyface.net}
+networks_map = {'tinyface': tinyface.tf_res50_net}
 
 arg_scopes_map = {'tinyface': tinyface.tf_arg_scope}
 
