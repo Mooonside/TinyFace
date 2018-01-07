@@ -191,7 +191,7 @@ def tinyface_losses(logits, localisations,
                     label_smoothing=0.,
                     device='/cpu:0',
                     scope=None):
-  with tf.name_scope(scope, 'tintface_losses'):
+  with tf.name_scope(scope, 'tinyface_losses'):
     lshape = tfe.get_shape(logits[0], 5)
     num_classes = lshape[-1]
     batch_size = lshape[0]

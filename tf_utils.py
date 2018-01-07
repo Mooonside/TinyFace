@@ -184,6 +184,19 @@ def add_variables_summaries(learning_rate):
 def update_model_scope(var, ckpt_scope, new_scope):
     return var.op.name.replace(new_scope,'vgg_16')
 
+def missing_vars(flags):
+    missing = [ i.name.split(':')[0] for i in tf.global_variables()]
+    ckpt = tf.train.get_checkpoint_state(flags.checkpoint_path)
+    res_reader = pywrap_tensorflow.NewCheckpointReader(ckpt.model_checkpoint_path)
+    res_var_to_shape_map = res_reader.get_variable_to_shape_map()
+    res_tensor_names = sorted(res_var_to_shape_map.keys())
+
+    for i in res_tensor_names:
+        if i in missing:
+            missing.remove(i)
+    return missing
+
+
 def get_init_fn(flags):
     """Returns a function run by the chief worker to warm-start the training.
     Note that the init_fn is only run when initializing the model during the very

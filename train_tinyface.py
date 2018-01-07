@@ -157,7 +157,7 @@ tf.app.flags.DEFINE_string(
   'Comma-separated list of scopes to filter the set of variables to train.'
   'By default, None would train all the variables.')
 tf.app.flags.DEFINE_boolean(
-  'ignore_missing_vars', False,
+  'ignore_missing_vars', True,
   'When restoring a checkpoint would ignore missing variables.')
 
 FLAGS = tf.app.flags.FLAGS
@@ -267,11 +267,9 @@ def main(_):
                            pad_step_number=False)
     summary_op = tf.summary.merge(list(summaries), name='summary_op')
 
-
-    debug = open('tf_variables.txt','w')
-    for i in tf.global_variables():
-      debug.write(i.name[:-2]+'\n')
-    debug.close()
+    # missing_vars = tf_utils.missing_vars(FLAGS)
+    # if FLAGS.ignore_missing_vars is not None:
+    #   FLAGS.ignore_missing_vars += missing_vars
 
     slim.learning.train(
       train_tensor,
