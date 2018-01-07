@@ -143,7 +143,7 @@ tf.app.flags.DEFINE_float(
 # Fine-Tuning Flags.
 # =========================================================================== #
 tf.app.flags.DEFINE_string(
-  'checkpoint_path', None,
+  'checkpoint_path', '/media/yifeng/Yifeng_Seagate/Pretrained-ckpts/tf_res50',
   'The path to a checkpoint from which to fine-tune.')
 tf.app.flags.DEFINE_string(
   'checkpoint_model_scope', None,
